@@ -22,15 +22,13 @@ struct Generate: ParsableCommand {
     private var dependencyJSON: String = ""
 
     /// The generated list of packages that changed in the commit hash
-    private var packageChanges: [String] = []
+    private var packageChanges = Set<String>()
 
     mutating func run() throws {
         setup()
-        print("changedFiles", changedFiles)
         try computeDependencyJSON()
         try computePackageChanges()
         let impact = try computeImpact()
-        print("impact", impact)
         try removeTestTargets(keeping: impact)
     }
 
@@ -42,16 +40,15 @@ struct Generate: ParsableCommand {
 
     /// Generates a JSON file with all the packages and their dependencies, starting with the root package
     private func computeDependencyJSON() throws {
-        print("swift package show-dependencies --package-path \(rootPackage) --format json > \(dependencyJSON)")
         try shell("swift package show-dependencies --package-path \(rootPackage) --format json > \(dependencyJSON)")
     }
 
     /// Get the packages that changed in a specific commit hash
     private mutating func computePackageChanges() throws {
-        packageChanges = changedFiles
-            .compactMap {
-                match(for: "Packages/(\\w+?)", in: $0)
-            }
+        packageChanges = Set(
+            changedFiles
+                .compactMap { match(for: "Packages/(\\w+?)", in: $0) }
+        )
     }
 
     /// Navigate the dependency tree recursively, to figure out the packages that were impacted
