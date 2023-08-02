@@ -3,7 +3,7 @@
 ## Usage
 
 Include these steps on github actions
-```
+```yalm
 - name: Get changed files
   id: changed-files
   uses: jitterbit/get-changed-files@v1
