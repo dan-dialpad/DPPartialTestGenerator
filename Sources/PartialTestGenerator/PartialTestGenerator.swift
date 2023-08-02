@@ -22,7 +22,7 @@ struct Generate: ParsableCommand {
     private var dependencyJSON: String = ""
 
     /// The generated list of packages that changed in the commit hash
-    private var packageChanges = Set<String>()
+    private var packageChanges: [String] = []
 
     mutating func run() throws {
         setup()
@@ -45,10 +45,8 @@ struct Generate: ParsableCommand {
 
     /// Get the packages that changed in a specific commit hash
     private mutating func computePackageChanges() throws {
-        packageChanges = Set(
-            changedFiles
-                .compactMap { match(for: "Packages/(\\w+?)", in: $0) }
-        )
+        packageChanges = changedFiles
+            .compactMap { match(for: "Packages/(\\w+?)", in: $0) }
     }
 
     /// Navigate the dependency tree recursively, to figure out the packages that were impacted
@@ -59,7 +57,7 @@ struct Generate: ParsableCommand {
         let jsonStr = try String(contentsOfFile: dependencyJSON, encoding: .utf8)
         let data = jsonStr.data(using: .utf8) ?? Data()
         let rootDict = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] ?? [:]
-        return packageChanges
+        return Set(packageChanges)
             .map { computeImpact(dict: rootDict, for: $0) }
             .reduce(Set()) { $0.union($1) }
     }
