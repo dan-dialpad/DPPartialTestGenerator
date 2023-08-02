@@ -7,6 +7,8 @@ Include these steps on github actions
 - name: Get changed files
   id: changed-files
   uses: jitterbit/get-changed-files@v1
+- name: Setup mint
+  uses: irgaly/setup-mint@v1
 - name: Generate partial test
   if: ${{ vars.TEST_STRATEGY == 'PARTIAL' }}
   run: |
